@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"gopkg.in/yaml.v3"
+	"log"
 )
 
 // Options provides a builder-pattern of user-facing optional functionality when constructing via venom.Initialize
@@ -76,9 +77,12 @@ func (o *Options) validate() error {
 	}
 
 	if o.templateOptions.YamlMarshaler == nil {
-		return errors.New("invalid yaml marsha provided")
+		return errors.New("invalid yaml marshal provided")
 	}
 
+	if o.templateOptions.Logger == nil {
+		return errors.New("invalid logger provided")
+	}
 	return nil
 }
 
@@ -92,6 +96,7 @@ func NewOptions() *Options {
 		templateOptions: &TemplateOptions{
 			JsonMarshaler: json.Marshal,
 			YamlMarshaler: yaml.Marshal,
+			Logger:        log.Default(),
 		},
 	}
 }

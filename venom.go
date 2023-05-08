@@ -2,7 +2,6 @@ package venom
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -18,11 +17,6 @@ var writers = make(map[Formats]writerFn)
 func Initialize(cmd *cobra.Command, options *Options) error {
 	if options == nil {
 		options = NewOptions()
-	}
-
-	logger := options.templateOptions.Logger
-	if logger == nil {
-		logger = log.Default()
 	}
 
 	if err := options.validate(); err != nil {
@@ -51,7 +45,7 @@ func Initialize(cmd *cobra.Command, options *Options) error {
 				outDir = "."
 			}
 
-			if err := Write(outDir, documentation, options.formats, options.TemplateOptions()); err != nil {
+			if err := Write(outDir, documentation, options); err != nil {
 				return err
 			}
 
@@ -62,18 +56,21 @@ func Initialize(cmd *cobra.Command, options *Options) error {
 	return nil
 }
 
-// RegisterWriter for a given format to allow writing via the writer function
-func RegisterWriter(format Formats, writer writerFn) {
+// registerWriter for a given format to allow writing via the writer function
+func registerWriter(format Formats, writer writerFn) {
 	writers[format] = writer
 }
 
 // Write to outDir the documentation for all given formats
-func Write(outDir string, documentation Documentation, formats Formats, options TemplateOptions) error {
+func Write(outDir string, documentation Documentation, options *Options) error {
 	var err error
+	formats := options.formats
+	templateOptions := options.TemplateOptions()
 	for _, format := range []Formats{Yaml, Json, Markdown, Man, ReST} {
 		if formats.IsSet(format) {
+			templateOptions.Logger.Printf("Generating documentation for %v", format)
 			if writer, ok := writers[format]; ok {
-				err = writer(outDir, documentation, options)
+				err = writer(outDir, documentation, templateOptions)
 				if err != nil {
 					return err
 				}

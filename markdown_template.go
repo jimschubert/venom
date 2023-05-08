@@ -32,7 +32,8 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		return err
 	}
 
-	rootCommand, err := os.Create(filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(doc.RootCommand.Name))))
+	rootCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(doc.RootCommand.Name)))
+	rootCommand, err := os.Create(rootCommandPath)
 	defer func(f *os.File) {
 		_ = f.Close()
 	}(rootCommand)
@@ -51,9 +52,12 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		return err
 	}
 
+	options.Logger.Printf("[markdown] Wrote file %s", rootCommandPath)
+
 	var writeCommand func(c Command, t *template.Template) error
 	writeCommand = func(c Command, t *template.Template) error {
-		subCommandFile, err := os.Create(filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(c.FullPath))))
+		subCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(c.FullPath)))
+		subCommandFile, err := os.Create(subCommandPath)
 		if err != nil {
 			return err
 		}
@@ -70,6 +74,8 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		}); err != nil {
 			return err
 		}
+
+		options.Logger.Printf("[markdown] Wrote file %s", subCommandPath)
 
 		for _, subcommand := range c.Subcommands {
 			err = writeCommand(subcommand, t)
@@ -96,7 +102,8 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 	} else {
 		indexName = "index"
 	}
-	index, err := os.Create(filepath.Join(docRoot, fmt.Sprintf("%s.md", indexName)))
+	indexPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", indexName))
+	index, err := os.Create(indexPath)
 	defer func(f *os.File) {
 		_ = f.Close()
 	}(index)
@@ -107,9 +114,13 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 
 	err = t.ExecuteTemplate(index, "markdown_index.tmpl", doc)
 
+	if err != nil {
+		options.Logger.Printf("[markdown] Wrote file %s", indexPath)
+	}
+
 	return err
 }
 
 func init() {
-	RegisterWriter(Markdown, writeMarkdown)
+	registerWriter(Markdown, writeMarkdown)
 }

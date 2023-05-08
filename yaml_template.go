@@ -19,9 +19,13 @@ func writeYaml(outDir string, doc Documentation, options TemplateOptions) error 
 	}
 
 	docYaml := filepath.Join(outDir, cleanName, fmt.Sprintf("%s.yml", cleanName))
-	return os.WriteFile(docYaml, data, 0700)
+	err = os.WriteFile(docYaml, data, 0700)
+	if err != nil {
+		options.Logger.Printf("[yaml] Wrote file %s", docYaml)
+	}
+	return err
 }
 
 func init() {
-	RegisterWriter(Yaml, writeYaml)
+	registerWriter(Yaml, writeYaml)
 }

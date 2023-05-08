@@ -19,9 +19,13 @@ func writeJson(outDir string, doc Documentation, options TemplateOptions) error 
 	}
 
 	docJson := filepath.Join(outDir, cleanName, fmt.Sprintf("%s.json", cleanName))
-	return os.WriteFile(docJson, data, 0700)
+	err = os.WriteFile(docJson, data, 0700)
+	if err != nil {
+		options.Logger.Printf("[json] Wrote file %s", docJson)
+	}
+	return err
 }
 
 func init() {
-	RegisterWriter(Json, writeJson)
+	registerWriter(Json, writeJson)
 }
