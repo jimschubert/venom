@@ -121,13 +121,13 @@ func TestNewCommandFromCobra(t *testing.T) {
 						Name:     "and",
 						Usage:    "pinky and",
 						FullPath: "pinky and",
-						Parent:   &ParentCommand{Name: "pinky", Short: "p"},
+						Parent:   &ParentCommand{Name: "pinky", Short: "p", FullPath: "pinky"},
 						Subcommands: []Command{
 							withDefaults(&Command{
 								Name:     "brain",
 								Usage:    "pinky and brain",
 								FullPath: "pinky and brain",
-								Parent:   &ParentCommand{Name: "and"},
+								Parent:   &ParentCommand{Name: "and", FullPath: "pinky and"},
 							}),
 						},
 					}),

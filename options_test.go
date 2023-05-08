@@ -11,6 +11,7 @@ func TestOptions_validate(t *testing.T) {
 	defaultTemplateOptions := TemplateOptions{
 		JsonMarshaler: json.Marshal,
 		YamlMarshaler: yaml.Marshal,
+		Logger:        log.Default(),
 	}
 	type fields struct {
 		commandName   string

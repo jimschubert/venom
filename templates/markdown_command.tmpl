@@ -2,7 +2,7 @@
 {{- if .Long }}
 
 ### Synopsis
-{{ .Long }}
+{{ text .Long }}
 
 {{ end -}}
 {{- if .Runnable }}
@@ -19,7 +19,7 @@
 
 {{ end }}
 {{ end -}}
-{{- if .LocalFlags }}
+{{- if gt (len .LocalFlags) 0 }}
 ### Options
 
 ```
@@ -27,7 +27,7 @@
 ```
 
 {{ end -}}
-{{- if .InheritedFlags }}
+{{- if gt (len .InheritedFlags) 0 }}
 ### Options inherited from parent commands
 
 ```
@@ -40,7 +40,7 @@
 {{- if or .Parent .Subcommands }}
 ## SEE ALSO
 {{ if .Parent }}
-* [{{ .Parent.Name }}](./{{ see_also_path .Parent.Name }}.md){{ if .Parent.Short }} - {{ .Parent.Short }}{{ end }}
+* [{{ .Parent.Name }}](./{{ see_also_path .Parent.FullPath }}.md){{ if .Parent.Short }} - {{ .Parent.Short }}{{ end }}
 {{- end -}}
 {{- range $cmd := .Subcommands }}{{ if not $cmd.Hidden }}
 * [{{ $cmd.FullPath }}](./{{ see_also_path $cmd.FullPath }}.md){{ if $cmd.Short }} - {{ $cmd.Short }}{{ end }}

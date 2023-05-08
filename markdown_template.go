@@ -13,7 +13,10 @@ import (
 var templates embed.FS
 
 func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) error {
-	fns := MarkdownFns
+	fns := markdownFunctions{
+		stripAnsi: options.StripAnsiInMarkdown,
+	}
+
 	t, err := template.New("markdown").Funcs(template.FuncMap{
 		"header":        fns.FormatHeader,
 		"text":          fns.FormatText,

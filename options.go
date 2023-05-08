@@ -58,6 +58,12 @@ func (o *Options) WithShowHiddenCommands() *Options {
 	return o
 }
 
+// WithStripAnsiInMarkdown allows the caller to require ANSI characters to be stripped when processing markdown files.
+func (o *Options) WithStripAnsiInMarkdown() *Options {
+	o.templateOptions.StripAnsiInMarkdown = true
+	return o
+}
+
 // TemplateOptions provides the value of current TemplateOptions
 func (o *Options) TemplateOptions() TemplateOptions {
 	return *(*o).templateOptions

@@ -1,7 +1,6 @@
 package venom
 
 import (
-	"bytes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"strings"
@@ -36,8 +35,9 @@ type Documentation struct {
 
 // ParentCommand provides the name of a command's parent
 type ParentCommand struct {
-	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
-	Short string `yaml:"short,omitempty" json:"short,omitempty"`
+	Name     string `yaml:"name,omitempty" json:"name,omitempty"`
+	Short    string `yaml:"short,omitempty" json:"short,omitempty"`
+	FullPath string `yaml:"fullPath,omitempty" json:"fullPath,omitempty"`
 }
 
 // Command is a different representation of cobra.Command
@@ -154,18 +154,15 @@ func NewCommandFromCobra(cmd *cobra.Command, options *Options) Command {
 		}
 	}
 
-	fullPath := bytes.Buffer{}
-	lastIndex := len(paths) - 1
-	// example: [brain,and,pinky] => "pinky and brain"
-	for i := lastIndex; i >= 0; i-- {
-		if i != lastIndex {
-			fullPath.WriteString(" ")
-		}
-		part := paths[i]
-		fullPath.WriteString(part)
+	// reverse paths in-place
+	for i, j := 0, len(paths)-1; i < j; i, j = i+1, j-1 {
+		paths[i], paths[j] = paths[j], paths[i]
 	}
 
-	command.FullPath = fullPath.String()
+	if parentCommand != nil {
+		parentCommand.FullPath = strings.Join(paths[:len(paths)-1], " ")
+	}
+	command.FullPath = strings.Join(paths, " ")
 
 	if cmd.HasExample() {
 		examples := []string{cmd.Example}

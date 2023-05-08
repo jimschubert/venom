@@ -2,10 +2,12 @@ package venom
 
 import (
 	"fmt"
+	"github.com/jimschubert/stripansi"
 	"strings"
 )
 
 type markdownFunctions struct {
+	stripAnsi bool
 }
 
 func (m markdownFunctions) FormatHeader(input string) string {
@@ -18,7 +20,11 @@ func (m markdownFunctions) FormatText(input string) string {
 		" > ", " &gt; ",
 	)
 
-	return replacer.Replace(input)
+	if !m.stripAnsi {
+		return replacer.Replace(input)
+	} else {
+		return stripansi.String(replacer.Replace(input))
+	}
 }
 
 func (m markdownFunctions) FormatFlag(input Flag) string {
@@ -45,6 +51,5 @@ func (m markdownFunctions) IsLocalFlag(input Flag) bool {
 }
 
 var (
-	MarkdownFns           = markdownFunctions{}
-	_           Functions = (*markdownFunctions)(nil)
+	_ Functions = (*markdownFunctions)(nil)
 )
