@@ -2,8 +2,10 @@
 
 All you need to know about cobra commands. Generate documentation in a variety of formats, similar to what's available in Cobra but with some simplifications and fixes.
 
-[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue)](./LICENSE)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/jimschubert/venom?color=blue&sort=semver)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/jimschubert/venom)
+[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue)](./LICENSE)  
+[![build](https://github.com/jimschubert/venom/actions/workflows/build.yml/badge.svg)](https://github.com/jimschubert/venom/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jimschubert/venom)](https://goreportcard.com/report/github.com/jimschubert/venom)
 
 ## Features
