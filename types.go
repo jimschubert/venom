@@ -1,9 +1,31 @@
 package venom
 
 import (
+	"bytes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"strings"
 )
+
+// MarshalFn is a common interface allowing the caller to provide yaml/json marshaler functions
+type MarshalFn func(in interface{}) (out []byte, err error)
+
+// Logger allows the user to provide any logger fulfilling this interface
+type Logger interface {
+	// Printf is a common signature used by log.Logger, logrus.Logger, and others
+	Printf(format string, v ...any)
+}
+
+// Functions defines the common set of functions for template providers
+type Functions interface {
+	FormatHeader(input string) string
+	FormatText(input string) string
+	FormatFlag(input Flag) string
+	SeeAlsoPath(input string) string
+	FormatExample(input string) string
+	FormatAutoGenTag(input string) string
+	IsLocalFlag(input Flag) bool
+}
 
 // Documentation represents the "top-level" of documentation to be passed to a template
 type Documentation struct {
@@ -14,7 +36,8 @@ type Documentation struct {
 
 // ParentCommand provides the name of a command's parent
 type ParentCommand struct {
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
+	Short string `yaml:"short,omitempty" json:"short,omitempty"`
 }
 
 // Command is a different representation of cobra.Command
@@ -40,20 +63,22 @@ type Command struct {
 	InheritedFlags  []Flag            `yaml:"inheritedFlags,omitempty" json:"inheritedFlags,omitempty"`
 	PersistentFlags []Flag            `yaml:"persistentFlags,omitempty" json:"persistentFlags,omitempty"`
 	Examples        []string          `yaml:"examples,omitempty" json:"examples,omitempty"`
+	FullPath        string            `yaml:"fullPath,omitempty" json:"fullPath,omitempty"`
 }
 
 // Flag is a representation of pflag.Flag
 type Flag struct {
-	Name                string
-	Shorthand           string
-	Usage               string
-	DefValue            string
-	NoOptDefVal         string
-	Deprecated          string
-	Hidden              bool
-	ShorthandDeprecated string
-	Inherited           bool
-	Persistent          bool
+	Name                string `json:"name,omitempty" yaml:"name,omitempty"`
+	Shorthand           string `json:"shorthand,omitempty" yaml:"shorthand,omitempty"`
+	Usage               string `json:"usage,omitempty" yaml:"usage,omitempty"`
+	DefValue            string `json:"defValue,omitempty" yaml:"defValue,omitempty"`
+	NoOptDefVal         string `json:"noOptDefVal,omitempty" yaml:"noOptDefVal,omitempty"`
+	Deprecated          string `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	Hidden              bool   `json:"hidden,omitempty" yaml:"hidden,omitempty"`
+	ShorthandDeprecated string `json:"shorthandDeprecated,omitempty" yaml:"shorthandDeprecated,omitempty"`
+	Inherited           bool   `json:"inherited,omitempty" yaml:"inherited,omitempty"`
+	Persistent          bool   `json:"persistent,omitempty" yaml:"persistent,omitempty"`
+	RawUsage            string `json:"rawUsage,omitempty" yaml:"rawUsage,omitempty"`
 }
 
 func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
@@ -69,7 +94,7 @@ func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
 				Deprecated:          cobraFlag.Deprecated,
 				Hidden:              cobraFlag.Hidden,
 				ShorthandDeprecated: cobraFlag.ShorthandDeprecated,
-				Inherited:           true,
+				RawUsage:            FlagUsage(cobraFlag),
 			}
 
 			if fn != nil {
@@ -83,11 +108,14 @@ func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
 }
 
 // NewCommandFromCobra creates a venom.Command from a cobra.Command
-func NewCommandFromCobra(cmd *cobra.Command) Command {
+func NewCommandFromCobra(cmd *cobra.Command, options *Options) Command {
 	var parentCommand *ParentCommand
 	cobraParent := cmd.Parent()
 	if cobraParent != nil {
-		parentCommand = &ParentCommand{Name: cobraParent.Name()}
+		parentCommand = &ParentCommand{
+			Name:  cobraParent.Name(),
+			Short: cobraParent.Short,
+		}
 	}
 
 	annotations := make(map[string]string)
@@ -96,6 +124,8 @@ func NewCommandFromCobra(cmd *cobra.Command) Command {
 			annotations[key] = value
 		}
 	}
+
+	paths := make([]string, 0)
 
 	command := Command{
 		Name:          cmd.Name(),
@@ -113,19 +143,42 @@ func NewCommandFromCobra(cmd *cobra.Command) Command {
 		Version:       cmd.Version,
 		Hidden:        cmd.Hidden,
 		Runnable:      cmd.Runnable(),
-		RawFlagUsages: cmd.Flags().FlagUsages(),
+		RawFlagUsages: strings.TrimSuffix(cmd.Flags().FlagUsages(), "\n"),
 	}
+
+	paths = append(paths, cmd.Name())
+	if cobraParent != nil {
+		for cobraParent != nil {
+			paths = append(paths, cobraParent.Name())
+			cobraParent = cobraParent.Parent()
+		}
+	}
+
+	fullPath := bytes.Buffer{}
+	lastIndex := len(paths) - 1
+	// example: [brain,and,pinky] => "pinky and brain"
+	for i := lastIndex; i >= 0; i-- {
+		if i != lastIndex {
+			fullPath.WriteString(" ")
+		}
+		part := paths[i]
+		fullPath.WriteString(part)
+	}
+
+	command.FullPath = fullPath.String()
 
 	if cmd.HasExample() {
 		examples := []string{cmd.Example}
 		command.Examples = examples
 	}
 
-	cmdLen := len(cmd.Commands())
-	subcommands := make([]Command, cmdLen)
-	for i, c := range cmd.Commands() {
-		sub := NewCommandFromCobra(c)
-		subcommands[i] = sub
+	subcommands := make([]Command, 0)
+	for _, c := range cmd.Commands() {
+		if c.Hidden && !options.ShowHiddenCommands {
+			continue
+		}
+		sub := NewCommandFromCobra(c, options)
+		subcommands = append(subcommands, sub)
 	}
 
 	cmd.Groups()

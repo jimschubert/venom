@@ -49,9 +49,55 @@ func TestNewCommandFromCobra(t *testing.T) {
 				Short: "p",
 			}},
 			want: withDefaults(&Command{
-				Name:  "pinky",
-				Usage: "pinky",
-				Short: "p",
+				Name:     "pinky",
+				Usage:    "pinky",
+				Short:    "p",
+				FullPath: "pinky",
+			}),
+		},
+		{
+			name: "Simple command, no children, with flags",
+			args: args{cmd: func() *cobra.Command {
+				command := cobra.Command{
+					Use:   "pinky",
+					Short: "p",
+				}
+
+				command.Flags().Bool("first", true, "first flag")
+				command.Flags().Bool("second", false, "second flag")
+				command.Flags().Int8("third", 5, "third flag")
+
+				return &command
+			}()},
+			want: withDefaults(&Command{
+				Name:          "pinky",
+				FullPath:      "pinky",
+				Usage:         "pinky [flags]",
+				Short:         "p",
+				RawFlagUsages: "      --first        first flag (default true)\n      --second       second flag\n      --third int8   third flag (default 5)",
+				LocalFlags: []Flag{
+					{
+						Name:        "first",
+						Usage:       "first flag",
+						DefValue:    "true",
+						NoOptDefVal: "true",
+						Inherited:   false,
+						RawUsage:    "      --first\tfirst flag (default true)",
+					},
+					{
+						Name:        "second",
+						Usage:       "second flag",
+						DefValue:    "false",
+						NoOptDefVal: "true",
+						RawUsage:    "      --second\tsecond flag",
+					},
+					{
+						Name:     "third",
+						Usage:    "third flag",
+						DefValue: "5",
+						RawUsage: "      --third int8\tthird flag (default 5)",
+					},
+				},
 			}),
 		},
 		{
@@ -66,19 +112,22 @@ func TestNewCommandFromCobra(t *testing.T) {
 			},
 			))},
 			want: withDefaults(&Command{
-				Name:  "pinky",
-				Usage: "pinky",
-				Short: "p",
+				Name:     "pinky",
+				FullPath: "pinky",
+				Usage:    "pinky",
+				Short:    "p",
 				Subcommands: []Command{
 					withDefaults(&Command{
-						Name:   "and",
-						Usage:  "pinky and",
-						Parent: &ParentCommand{Name: "pinky"},
+						Name:     "and",
+						Usage:    "pinky and",
+						FullPath: "pinky and",
+						Parent:   &ParentCommand{Name: "pinky", Short: "p"},
 						Subcommands: []Command{
 							withDefaults(&Command{
-								Name:   "brain",
-								Usage:  "pinky and brain",
-								Parent: &ParentCommand{Name: "and"},
+								Name:     "brain",
+								Usage:    "pinky and brain",
+								FullPath: "pinky and brain",
+								Parent:   &ParentCommand{Name: "and"},
 							}),
 						},
 					}),
@@ -105,6 +154,7 @@ func TestNewCommandFromCobra(t *testing.T) {
 			}},
 			want: withDefaults(&Command{
 				Name:       "sample",
+				FullPath:   "sample",
 				Short:      "s",
 				Usage:      "sample",
 				Long:       "sample test",
@@ -120,9 +170,10 @@ func TestNewCommandFromCobra(t *testing.T) {
 			}),
 		},
 	}
+	opts := NewOptions()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewCommandFromCobra(tt.args.cmd)
+			got := NewCommandFromCobra(tt.args.cmd, opts)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("NewCommandFromCobra():\n%v", strings.Join(diff, "\t\n"))
 			}

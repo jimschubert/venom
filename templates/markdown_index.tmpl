@@ -1,0 +1,13 @@
+# {{ header .RootCommand.Name }}
+
+* [{{ .RootCommand.Name }}](./{{ see_also_path .RootCommand.Name }}.md){{ if .RootCommand.Short }} - {{ .RootCommand.Short }}{{ end }}
+{{- if .RootCommand.Subcommands }}
+{{- range $cmd := .RootCommand.Subcommands }}{{ if not $cmd.Hidden }}
+* [{{ $cmd.FullPath }}](./{{ see_also_path $cmd.FullPath }}.md){{ if $cmd.Short }} - {{ $cmd.Short }}{{ end }}
+{{- end }}
+{{- end }}
+{{ end -}}
+
+{{ if .AutoGenerationTag }}
+{{ autogen .AutoGenerationTag }} {{ .GenerationDate }}
+{{ end -}}

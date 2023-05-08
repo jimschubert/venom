@@ -1,8 +1,8 @@
-package util
+package venom
 
 import "regexp"
 
-var nonPathRegex = regexp.MustCompile(`[^a-zA-Z0-9._\- ]+`)
+var nonPathRegex = regexp.MustCompile(`[^a-zA-Z0-9.\-]+`)
 
 // CleanPath will replace all invalid characters in input with underscore by default. A varargs is abused here to allow
 // for passing a single optional replace character (acting as a function overload).
@@ -17,6 +17,6 @@ func CleanPath(input string, replace ...string) string {
 	} else {
 		replaceWith = "_"
 	}
-	
+
 	return nonPathRegex.ReplaceAllString(input, replaceWith)
 }
