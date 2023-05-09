@@ -117,7 +117,7 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 
 	err = t.ExecuteTemplate(index, "markdown_index.tmpl", doc)
 
-	if err != nil {
+	if err == nil {
 		options.Logger.Printf("[markdown] Wrote file %s", indexPath)
 	}
 

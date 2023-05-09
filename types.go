@@ -171,7 +171,7 @@ func NewCommandFromCobra(cmd *cobra.Command, options *Options) Command {
 
 	subcommands := make([]Command, 0)
 	for _, c := range cmd.Commands() {
-		if c.Hidden && !options.ShowHiddenCommands {
+		if c.Hidden && !options.showHiddenCommands {
 			continue
 		}
 		sub := NewCommandFromCobra(c, options)

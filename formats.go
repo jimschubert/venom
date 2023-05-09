@@ -37,3 +37,13 @@ func (f *Formats) Unset(format Formats) *Formats {
 func (f *Formats) IsValid() bool {
 	return f.IsSet(Markdown) || f.IsSet(Man) || f.IsSet(Yaml) || f.IsSet(ReST) || f.IsSet(Json)
 }
+
+func (f *Formats) defined() []Formats {
+	defined := make([]Formats, 0)
+	for _, format := range []Formats{Yaml, Json, Markdown, Man, ReST} {
+		if f.IsSet(format) {
+			defined = append(defined, format)
+		}
+	}
+	return defined
+}

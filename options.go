@@ -9,11 +9,12 @@ import (
 
 // Options provides a builder-pattern of user-facing optional functionality when constructing via venom.Initialize
 type Options struct {
-	commandName        string
-	formats            Formats
-	outDir             string
-	ShowHiddenCommands bool
-	templateOptions    *TemplateOptions
+	commandName               string
+	formats                   Formats
+	outDir                    string
+	showHiddenCommands        bool
+	disableUserCommandOptions bool
+	templateOptions           *TemplateOptions
 }
 
 // WithCommandName allows the caller to provide the target command name, which is used to construct a cobra.Command for documentation.
@@ -54,13 +55,20 @@ func (o *Options) WithOutDirectory(out string) *Options {
 
 // WithShowHiddenCommands allows the caller to signify whether details about hidden commands should be present in the final output
 func (o *Options) WithShowHiddenCommands() *Options {
-	o.ShowHiddenCommands = true
+	o.showHiddenCommands = true
 	return o
 }
 
 // WithStripAnsiInMarkdown allows the caller to require ANSI characters to be stripped when processing markdown files.
 func (o *Options) WithStripAnsiInMarkdown() *Options {
 	o.templateOptions.StripAnsiInMarkdown = true
+	return o
+}
+
+// DisableUserCommandOptions allows the caller to define fixed options such as output directory, supported doc formats, etc.
+// Default behavior is a documentation command which provides defaults defined by the caller, but exposing a subset of options to the user.
+func (o *Options) DisableUserCommandOptions() *Options {
+	o.disableUserCommandOptions = true
 	return o
 }
 
