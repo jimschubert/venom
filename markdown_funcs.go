@@ -28,15 +28,11 @@ func (m markdownFunctions) FormatHeader(input string) string {
 }
 
 func (m markdownFunctions) FormatText(input string) string {
-	replacer := strings.NewReplacer(
-		" < ", " &lt; ",
-		" > ", " &gt; ",
-	)
-
+	// TODO: consider cleaning HTML characters here, for now assume people do the right thing by indenting any code blocks in Long descriptions
 	if !m.stripAnsi {
-		return replacer.Replace(input)
+		return input
 	} else {
-		return stripansi.String(replacer.Replace(input))
+		return stripansi.String(input)
 	}
 }
 
