@@ -39,7 +39,7 @@ func init() {
 }
 ```
 
-All defined formats will be generated into the output directory, which defaults to `dist/docs` and is configurable.
+All defined formats will be generated into the output directory, which defaults to `docs` and is configurable.
 
 
 Here is a fuller example of generating only markdown: 

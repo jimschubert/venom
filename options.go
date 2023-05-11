@@ -52,7 +52,7 @@ func (o *Options) WithYamlMarshal(fn MarshalFn) *Options {
 	return o
 }
 
-// WithOutDirectory allows the caller to define an output directory which differs from the default dist/docs.
+// WithOutDirectory allows the caller to define an output directory which differs from the default ./docs.
 func (o *Options) WithOutDirectory(out string) *Options {
 	o.outDir = out
 	return o
@@ -121,7 +121,7 @@ func NewOptions() *Options {
 	return &Options{
 		commandName: "docs",
 		formats:     Markdown,
-		outDir:      "dist/docs",
+		outDir:      "docs",
 		templateOptions: &TemplateOptions{
 			JsonMarshaler: json.Marshal,
 			YamlMarshaler: yaml.Marshal,
