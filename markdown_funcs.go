@@ -5,10 +5,22 @@ import (
 	"github.com/jimschubert/stripansi"
 	"github.com/jimschubert/venom/internal"
 	"strings"
+	"unicode"
 )
 
 type markdownFunctions struct {
 	stripAnsi bool
+}
+
+func (m markdownFunctions) FormatOptions(input string) string {
+	tmp := strings.FieldsFunc(input, func(r rune) bool {
+		return '\n' == r
+	})
+	lines := make([]string, 0)
+	for _, s := range tmp {
+		lines = append(lines, strings.TrimLeftFunc(s, unicode.IsSpace))
+	}
+	return strings.Join(lines, "\n")
 }
 
 func (m markdownFunctions) FormatHeader(input string) string {
