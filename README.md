@@ -145,6 +145,8 @@ struct {
 The embedded `Command` allows you to interact with the command's fields directly at the top level of the template. The `Doc` 
 field is the full documentation, providing you access to the root command and all child commands.
 
+Index templates will be bound to the `Documentation` structure directly.
+
 **NOTE** Not all output formats are template driven. Be sure to review [./templates](./templates).
 
 ## Build/Test
