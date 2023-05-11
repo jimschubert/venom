@@ -21,7 +21,7 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		"example":       fns.FormatExample,
 		"autogen":       fns.FormatAutoGenTag,
 		"is_local":      fns.IsLocalFlag,
-	}).ParseFS(options.Templates, "templates/*.tmpl")
+	}).ParseFS(options.Templates, "**/*.tmpl")
 	if err != nil {
 		return err
 	}
