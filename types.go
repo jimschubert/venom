@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"strings"
+	"time"
 )
 
 // MarshalFn is a common interface allowing the caller to provide yaml/json marshaler functions
@@ -31,6 +32,12 @@ type Documentation struct {
 	GenerationDate    string  `yaml:"generationDate,omitempty" json:"generationDate,omitempty"`
 	AutoGenerationTag string  `yaml:"autoGenerationTag,omitempty" json:"autoGenerationTag,omitempty"`
 	RootCommand       Command `yaml:"rootCommand,omitempty" json:"rootCommand,omitempty"`
+}
+
+func (d *Documentation) init() {
+	if d.GenerationDate == "" {
+		d.GenerationDate = time.Now().Format("2-Jan-2006")
+	}
 }
 
 // ParentCommand provides the name of a command's parent

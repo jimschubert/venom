@@ -30,7 +30,7 @@ go get -u github.com/jimschubert/venom
 First, initialize `venom.NewOptions()`. These options follow the builder pattern to make available options easily discoverable.
 Next, initialize venom by passing your root command the above options. For example:
 
-```
+```go
 func init() {
 	opts := venom.NewOptions().
 		WithFormats(venom.Yaml | venom.Json | venom.Markdown).
@@ -43,7 +43,7 @@ All defined formats will be generated into the output directory, which defaults 
 
 
 Here is a fuller example of generating only markdown: 
-```
+```go
 package cmd
 
 import (

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"strings"
-	"time"
 )
 
 type writerFn func(outDir string, doc Documentation, options TemplateOptions) error
@@ -69,8 +68,7 @@ func Initialize(cmd *cobra.Command, options *Options) error {
 			opts.formats = definedFormats
 
 			documentation := Documentation{
-				GenerationDate: time.Now().Format("2-Jan-2006"),
-				RootCommand:    NewCommandFromCobra(root, &opts),
+				RootCommand: NewCommandFromCobra(root, &opts),
 			}
 
 			if !cmd.DisableAutoGenTag {
@@ -136,6 +134,10 @@ func Write(documentation Documentation, options *Options) error {
 	var err error
 	formats := options.formats
 	outDir := options.outDir
+
+	// ensure proper initialization
+	documentation.init()
+
 	templateOptions := options.TemplateOptions()
 	for _, format := range []Formats{Yaml, Json, Markdown, Man, ReST} {
 		if formats.IsSet(format) {
