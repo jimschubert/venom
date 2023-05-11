@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-test/deep"
+	"github.com/jimschubert/venom/internal"
 	"os"
 	"path/filepath"
 	"strings"
@@ -62,7 +63,7 @@ func TestJsonWrite(t *testing.T) {
 				t.Fatalf("writeJson() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			clean := CleanPath(tt.args.doc.RootCommand.Name)
+			clean := internal.CleanPath(tt.args.doc.RootCommand.Name)
 			b, err := os.ReadFile(filepath.Join(outDir, clean, fmt.Sprintf("%s.json", clean)))
 			if err != nil {
 				t.Fatalf("writeJson() unable to read file at expected path")

@@ -3,6 +3,7 @@ package venom
 import (
 	"fmt"
 	"github.com/go-test/deep"
+	"github.com/jimschubert/venom/internal"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
@@ -62,7 +63,7 @@ func TestYamlWrite(t *testing.T) {
 				t.Fatalf("writeYaml() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			clean := CleanPath(tt.args.doc.RootCommand.Name)
+			clean := internal.CleanPath(tt.args.doc.RootCommand.Name)
 			b, err := os.ReadFile(filepath.Join(outDir, clean, fmt.Sprintf("%s.yml", clean)))
 			if err != nil {
 				t.Fatalf("writeYaml() unable to read file at expected path")

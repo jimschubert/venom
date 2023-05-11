@@ -1,6 +1,7 @@
 package venom
 
 import (
+	"github.com/jimschubert/venom/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"strings"
@@ -14,17 +15,6 @@ type MarshalFn func(in interface{}) (out []byte, err error)
 type Logger interface {
 	// Printf is a common signature used by log.Logger, logrus.Logger, and others
 	Printf(format string, v ...any)
-}
-
-// Functions defines the common set of functions for template providers
-type Functions interface {
-	FormatHeader(input string) string
-	FormatText(input string) string
-	FormatFlag(input Flag) string
-	SeeAlsoPath(input string) string
-	FormatExample(input string) string
-	FormatAutoGenTag(input string) string
-	IsLocalFlag(input Flag) bool
 }
 
 // Documentation represents the "top-level" of documentation to be passed to a template
@@ -110,7 +100,7 @@ func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
 				Deprecated:          cobraFlag.Deprecated,
 				Hidden:              cobraFlag.Hidden,
 				ShorthandDeprecated: cobraFlag.ShorthandDeprecated,
-				RawUsage:            FlagUsage(cobraFlag),
+				RawUsage:            internal.FlagUsage(cobraFlag),
 			}
 
 			if fn != nil {

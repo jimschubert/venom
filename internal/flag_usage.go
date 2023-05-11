@@ -1,4 +1,4 @@
-package venom
+package internal
 
 import (
 	"fmt"

@@ -2,6 +2,7 @@ package venom
 
 import (
 	"fmt"
+	"github.com/jimschubert/venom/internal"
 	"os"
 	"path/filepath"
 )
@@ -12,7 +13,7 @@ func writeJson(outDir string, doc Documentation, options TemplateOptions) error 
 		return err
 	}
 
-	cleanName := CleanPath(doc.RootCommand.Name)
+	cleanName := internal.CleanPath(doc.RootCommand.Name)
 	docRoot := filepath.Join(outDir, cleanName)
 	if err := os.MkdirAll(docRoot, 0700); err != nil {
 		return err

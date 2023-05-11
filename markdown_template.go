@@ -3,6 +3,7 @@ package venom
 import (
 	_ "embed"
 	"fmt"
+	"github.com/jimschubert/venom/internal"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -13,25 +14,17 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		stripAnsi: options.StripAnsiInMarkdown,
 	}
 
-	t, err := template.New("markdown").Funcs(template.FuncMap{
-		"header":        fns.FormatHeader,
-		"text":          fns.FormatText,
-		"flag":          fns.FormatFlag,
-		"see_also_path": fns.SeeAlsoPath,
-		"example":       fns.FormatExample,
-		"autogen":       fns.FormatAutoGenTag,
-		"is_local":      fns.IsLocalFlag,
-	}).ParseFS(options.Templates, "**/*.tmpl")
+	t, err := template.New("markdown").Funcs(newFuncMap(fns)).ParseFS(options.Templates, "**/*.tmpl")
 	if err != nil {
 		return err
 	}
 
-	docRoot := filepath.Join(outDir, CleanPath(doc.RootCommand.Name))
+	docRoot := filepath.Join(outDir, internal.CleanPath(doc.RootCommand.Name))
 	if err := os.MkdirAll(docRoot, 0700); err != nil {
 		return err
 	}
 
-	rootCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(doc.RootCommand.Name)))
+	rootCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", internal.CleanPath(doc.RootCommand.Name)))
 	rootCommand, err := os.Create(rootCommandPath)
 	defer func(f *os.File) {
 		_ = f.Close()
@@ -55,7 +48,7 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 
 	var writeCommand func(c Command, t *template.Template) error
 	writeCommand = func(c Command, t *template.Template) error {
-		subCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", CleanPath(c.FullPath)))
+		subCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.md", internal.CleanPath(c.FullPath)))
 		subCommandFile, err := os.Create(subCommandPath)
 		if err != nil {
 			return err

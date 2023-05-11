@@ -3,6 +3,7 @@ package venom
 import (
 	"fmt"
 	"github.com/jimschubert/stripansi"
+	"github.com/jimschubert/venom/internal"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ func (m markdownFunctions) FormatFlag(input Flag) string {
 }
 
 func (m markdownFunctions) SeeAlsoPath(input string) string {
-	return CleanPath(input)
+	return internal.CleanPath(input)
 }
 
 func (m markdownFunctions) FormatExample(input string) string {
@@ -51,5 +52,5 @@ func (m markdownFunctions) IsLocalFlag(input Flag) bool {
 }
 
 var (
-	_ Functions = (*markdownFunctions)(nil)
+	_ functions = (*markdownFunctions)(nil)
 )
