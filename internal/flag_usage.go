@@ -77,6 +77,23 @@ func FlagUsage(flag *pflag.Flag) string {
 	}
 
 	line += fmt.Sprintf("\t%s", usage)
+	defaultValue := defaultValueForFlag(flag)
+
+	if defaultValue != "" {
+		if flag.Value.Type() == "string" {
+			line += fmt.Sprintf(" (default %q)", flag.DefValue)
+		} else {
+			line += fmt.Sprintf(" (default %s)", flag.DefValue)
+		}
+	}
+	if len(flag.Deprecated) != 0 {
+		line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
+	}
+
+	return line
+}
+
+func defaultValueForFlag(flag *pflag.Flag) string {
 	var defaultValue string
 	switch flag.Value.Type() {
 	case "bool":
@@ -111,17 +128,5 @@ func FlagUsage(flag *pflag.Flag) string {
 			defaultValue = flag.DefValue
 		}
 	}
-
-	if defaultValue != "" {
-		if flag.Value.Type() == "string" {
-			line += fmt.Sprintf(" (default %q)", flag.DefValue)
-		} else {
-			line += fmt.Sprintf(" (default %s)", flag.DefValue)
-		}
-	}
-	if len(flag.Deprecated) != 0 {
-		line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
-	}
-
-	return line
+	return defaultValue
 }
