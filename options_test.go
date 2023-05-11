@@ -63,6 +63,7 @@ func TestOptions_validate(t *testing.T) {
 				Logger:        defaultTemplateOptions.Logger,
 				YamlMarshaler: defaultTemplateOptions.YamlMarshaler,
 				JsonMarshaler: defaultTemplateOptions.JsonMarshaler,
+				Templates:     templates,
 			}
 
 			if tt.fields.logger != nil {

@@ -1,11 +1,16 @@
 package venom
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
 	"gopkg.in/yaml.v3"
+	"io/fs"
 	"log"
 )
+
+//go:embed templates/*.tmpl
+var templates embed.FS
 
 // Options provides a builder-pattern of user-facing optional functionality when constructing via venom.Initialize
 type Options struct {
@@ -72,6 +77,12 @@ func (o *Options) DisableUserCommandOptions() *Options {
 	return o
 }
 
+// WithCustomTemplates allows the user to provide an implementation which provide custom templates for any template-driven format.
+func (o *Options) WithCustomTemplates(fs fs.FS) *Options {
+	o.templateOptions.Templates = fs
+	return o
+}
+
 // TemplateOptions provides the value of current TemplateOptions
 func (o *Options) TemplateOptions() TemplateOptions {
 	return *(*o).templateOptions
@@ -97,6 +108,10 @@ func (o *Options) validate() error {
 	if o.templateOptions.Logger == nil {
 		return errors.New("invalid logger provided")
 	}
+
+	if o.templateOptions.Templates == nil {
+		return errors.New("invalid templates provided")
+	}
 	return nil
 }
 
@@ -111,6 +126,7 @@ func NewOptions() *Options {
 			JsonMarshaler: json.Marshal,
 			YamlMarshaler: yaml.Marshal,
 			Logger:        log.Default(),
+			Templates:     templates,
 		},
 	}
 }

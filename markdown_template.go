@@ -1,16 +1,12 @@
 package venom
 
 import (
-	"embed"
 	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
 	"text/template"
 )
-
-//go:embed templates/*.tmpl
-var templates embed.FS
 
 func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) error {
 	fns := markdownFunctions{
@@ -25,7 +21,7 @@ func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) er
 		"example":       fns.FormatExample,
 		"autogen":       fns.FormatAutoGenTag,
 		"is_local":      fns.IsLocalFlag,
-	}).ParseFS(templates, "templates/*.tmpl")
+	}).ParseFS(options.Templates, "templates/*.tmpl")
 	if err != nil {
 		return err
 	}
