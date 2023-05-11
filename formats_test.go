@@ -147,3 +147,80 @@ func TestFormats_Unset(t *testing.T) {
 		})
 	}
 }
+
+func TestFormats_defined(t *testing.T) {
+	tests := []struct {
+		name string
+		f    Formats
+		want []Formats
+	}{
+		{
+			name: "one",
+			f:    Yaml,
+			want: []Formats{Yaml},
+		},
+		{
+			name: "two",
+			f:    Yaml | Markdown | Json,
+			want: []Formats{Yaml, Json, Markdown},
+		},
+		{
+			name: "multiple",
+			f:    Markdown | Yaml | Man | Json | ReST,
+			want: []Formats{Yaml, Json, Markdown, Man, ReST},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.f.defined(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("defined() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFormats_String(t *testing.T) {
+	tests := []struct {
+		name string
+		i    Formats
+		want string
+	}{
+		{
+			name: "Yaml",
+			i:    Yaml,
+			want: "Yaml",
+		},
+		{
+			name: "Json",
+			i:    Json,
+			want: "Json",
+		},
+		{
+			name: "Markdown",
+			i:    Markdown,
+			want: "Markdown",
+		},
+		{
+			name: "Man",
+			i:    Man,
+			want: "Man",
+		},
+		{
+			name: "ReST",
+			i:    ReST,
+			want: "ReST",
+		},
+		{
+			name: "multiple",
+			i:    Yaml | Markdown | Json,
+			want: "Yaml|Json|Markdown",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.i.String(); got != tt.want {
+				t.Errorf("String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
