@@ -8,11 +8,8 @@ var nonPathRegex = regexp.MustCompile(`[^a-zA-Z0-9.\-]+`)
 // for passing a single optional replace character (acting as a function overload).
 func CleanPath(input string, replace ...string) string {
 	var replaceWith string
-	if len(replace) > 1 {
-		panic("multiple replace characters are not supported")
-	}
-
-	if len(replace) == 1 {
+	if len(replace) >= 1 {
+		// multiple replace characters are not supported
 		replaceWith = replace[0]
 	} else {
 		replaceWith = "_"
