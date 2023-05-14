@@ -10,14 +10,13 @@ All you need to know about cobra commands. Generate documentation in a variety o
 
 ## Features
 
-* Documentation output for Markdown, YAML, JSON
+* Documentation output for Markdown, YAML, JSON, reStructuredText
 * Customizable YAML and JSON marshaling
-* User-defined templating
+* User-defined templating for Markdown and reStructuredText
 
 ## TODO
 
 * Manpage support
-* Restructured Text support
 
 ## Install
 

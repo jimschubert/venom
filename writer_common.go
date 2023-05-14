@@ -5,7 +5,9 @@ import (
 	"github.com/jimschubert/venom/internal"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+	"unicode"
 )
 
 type writerForTemplates struct {
@@ -19,6 +21,7 @@ type writerForTemplates struct {
 }
 
 func (w *writerForTemplates) write() error {
+	templateName := strings.ToLower(w.name)
 	t, err := template.New(w.name).Funcs(newFuncMap(w.funcs)).ParseFS(w.options.Templates, "**/*.tmpl")
 	if err != nil {
 		return err
@@ -39,7 +42,7 @@ func (w *writerForTemplates) write() error {
 		return err
 	}
 
-	if err := t.ExecuteTemplate(rootCommand, fmt.Sprintf("%s_command.tmpl", w.name), struct {
+	if err := t.ExecuteTemplate(rootCommand, fmt.Sprintf("%s_command.tmpl", templateName), struct {
 		Command
 		Doc Documentation
 	}{
@@ -62,7 +65,7 @@ func (w *writerForTemplates) write() error {
 			_ = subCommandFile.Close()
 		}(subCommandFile)
 
-		if err := t.ExecuteTemplate(subCommandFile, fmt.Sprintf("%s_command.tmpl", w.name), struct {
+		if err := t.ExecuteTemplate(subCommandFile, fmt.Sprintf("%s_command.tmpl", templateName), struct {
 			Command
 			Doc Documentation
 		}{
@@ -110,7 +113,7 @@ func (w *writerForTemplates) write() error {
 			return err
 		}
 
-		err = t.ExecuteTemplate(index, fmt.Sprintf("%s_index.tmpl", w.name), w.doc)
+		err = t.ExecuteTemplate(index, fmt.Sprintf("%s_index.tmpl", templateName), w.doc)
 
 		if err == nil {
 			w.options.Logger.Printf("[%s] Wrote file %s", w.name, indexPath)
@@ -148,4 +151,15 @@ func (w *writerForMarshals) write() error {
 		w.logger.Printf("[%s] Wrote file %s", w.name, docJson)
 	}
 	return err
+}
+
+func trimIndent(input string) string {
+	tmp := strings.FieldsFunc(input, func(r rune) bool {
+		return '\n' == r
+	})
+	lines := make([]string, 0)
+	for _, s := range tmp {
+		lines = append(lines, strings.TrimLeftFunc(s, unicode.IsSpace))
+	}
+	return strings.Join(lines, "\n")
 }

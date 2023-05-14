@@ -38,6 +38,8 @@ func Initialize(cmd *cobra.Command, options *Options) error {
 			formats = append(formats, "yaml")
 		case Json:
 			formats = append(formats, "json")
+		case ReST:
+			formats = append(formats, "rest")
 		}
 	}
 
@@ -109,6 +111,12 @@ func getUserSelectedFormats(o docCommandOptions, opts Options) Formats {
 				definedFormats.Set(Json)
 			} else {
 				opts.templateOptions.Logger.Printf("Skipping json documentation because the application maintainers have not enabled this output format.")
+			}
+		case "rest", "rst":
+			if opts.formats.IsSet(ReST) {
+				definedFormats.Set(ReST)
+			} else {
+				opts.templateOptions.Logger.Printf("Skipping rest documentation because the application maintainers have not enabled this output format.")
 			}
 		default:
 			opts.templateOptions.Logger.Printf("Skipping %s documentation because it is not currently supported.", format)

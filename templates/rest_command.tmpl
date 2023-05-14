@@ -1,0 +1,66 @@
+.. _{{ header .Name }}:
+
+{{ header .Name }}
+{{ range seq (len .Name) }}{{ "-" }}{{ end }}
+
+{{ if .Short }}{{ text .Short }}{{ end }}
+{{- if .Long }}
+
+Synopsis
+~~~~~~~~
+
+{{ text .Long }}
+{{ end -}}
+{{- if .Runnable }}
+
+::
+
+  {{ .Usage }}
+
+{{ end -}}
+{{- if .Examples }}
+Examples
+~~~~~~~~
+{{ range $example := .Examples }}
+::
+
+{{ example $example }}
+
+{{- end }}
+{{ end -}}
+{{- if gt (len .LocalFlags) 0 }}
+Options
+~~~~~~~
+
+::
+
+{{ options .RawFlagUsages }}
+
+{{ end -}}
+{{- if gt (len .InheritedFlags) 0 }}
+Options inherited from parent commands
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+{{ range $flag := .InheritedFlags }}
+{{ flag $flag }}
+{{ end }}
+
+{{ end }}
+{{- if or .Parent .Subcommands }}
+SEE ALSO
+~~~~~~~~
+
+{{ if .Parent -}}
+* {{ see_also_path .Parent.FullPath }}  - {{ .Parent.Short }}
+{{- end -}}
+{{- range $cmd := .Subcommands }}{{ if not $cmd.Hidden }}
+* {{ see_also_path $cmd.FullPath }} - {{ $cmd.Short }}
+{{- end }}
+{{- end }}
+
+{{ end }}
+{{- if .Doc.AutoGenerationTag }}
+*{{ autogen .Doc.AutoGenerationTag }} {{ .Doc.GenerationDate }}*
+{{- end }}

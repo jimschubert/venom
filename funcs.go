@@ -24,5 +24,12 @@ func newFuncMap(fns functions) template.FuncMap {
 		"example":       fns.FormatExample,
 		"autogen":       fns.FormatAutoGenTag,
 		"is_local":      fns.IsLocalFlag,
+		"seq": func(value int) []int {
+			var res []int
+			for i := 0; i < value; i++ {
+				res = append(res, i)
+			}
+			return res
+		},
 	}
 }

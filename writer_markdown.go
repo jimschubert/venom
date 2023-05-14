@@ -5,7 +5,6 @@ import (
 	"github.com/jimschubert/stripansi"
 	"github.com/jimschubert/venom/internal"
 	"strings"
-	"unicode"
 )
 
 type functionsMarkdown struct {
@@ -13,14 +12,7 @@ type functionsMarkdown struct {
 }
 
 func (m functionsMarkdown) FormatOptions(input string) string {
-	tmp := strings.FieldsFunc(input, func(r rune) bool {
-		return '\n' == r
-	})
-	lines := make([]string, 0)
-	for _, s := range tmp {
-		lines = append(lines, strings.TrimLeftFunc(s, unicode.IsSpace))
-	}
-	return strings.Join(lines, "\n")
+	return trimIndent(input)
 }
 
 func (m functionsMarkdown) FormatHeader(input string) string {
