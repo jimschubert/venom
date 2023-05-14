@@ -12,6 +12,15 @@ import (
 //go:embed templates/*.tmpl
 var templates embed.FS
 
+// TemplateOptions are those options provided to the templating system
+type TemplateOptions struct {
+	Logger              Logger
+	JsonMarshaler       MarshalFn
+	YamlMarshaler       MarshalFn
+	StripAnsiInMarkdown bool
+	Templates           fs.FS
+}
+
 // Options provides a builder-pattern of user-facing optional functionality when constructing via venom.Initialize
 type Options struct {
 	commandName               string

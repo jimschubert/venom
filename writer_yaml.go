@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func writeYaml(outDir string, doc Documentation, options TemplateOptions) error {
+func writerYaml(outDir string, doc Documentation, options TemplateOptions) error {
 	data, err := options.YamlMarshaler(&doc)
 	if err != nil {
 		return err
@@ -28,5 +28,5 @@ func writeYaml(outDir string, doc Documentation, options TemplateOptions) error 
 }
 
 func init() {
-	registerWriter(Yaml, writeYaml)
+	registerWriter(Yaml, writerYaml)
 }

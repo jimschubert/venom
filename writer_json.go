@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func writeJson(outDir string, doc Documentation, options TemplateOptions) error {
+func writerJson(outDir string, doc Documentation, options TemplateOptions) error {
 	data, err := options.JsonMarshaler(&doc)
 	if err != nil {
 		return err
@@ -28,5 +28,5 @@ func writeJson(outDir string, doc Documentation, options TemplateOptions) error 
 }
 
 func init() {
-	registerWriter(Json, writeJson)
+	registerWriter(Json, writerJson)
 }
