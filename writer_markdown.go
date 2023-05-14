@@ -59,26 +59,36 @@ func (m functionsMarkdown) IsLocalFlag(input Flag) bool {
 	return !input.Persistent && !input.Inherited
 }
 
-func writerTemplateMarkdown(outDir string, doc Documentation, options TemplateOptions) error {
+type writerMarkdown struct {
+	options TemplateOptions
+}
+
+func (w *writerMarkdown) Write(outDir string, doc Documentation) error {
 	fns := functionsMarkdown{
-		stripAnsi: options.StripAnsiInMarkdown,
+		stripAnsi: w.options.StripAnsiInMarkdown,
 	}
 
-	writer := templateWriter{
-		name:          "markdown",
+	helper := writerForTemplates{
+		name:          Markdown.String(),
 		fileExtension: "md",
 		outDir:        outDir,
 		doc:           doc,
-		options:       options,
+		options:       w.options,
 		funcs:         fns,
 		includeIndex:  true,
 	}
 
-	return writer.write()
+	return helper.write()
+}
+
+func (w *writerMarkdown) SetTemplateOptions(options TemplateOptions) {
+	w.options = options
 }
 
 func init() {
-	registerWriter(Markdown, writerTemplateMarkdown)
+	registerWriter(Markdown, func() writer {
+		return &writerMarkdown{}
+	})
 }
 
 var (

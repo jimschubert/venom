@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// MarshalFn is a common interface allowing the caller to provide yaml/json marshaler functions
+// MarshalFn is a common interface allowing the caller to provide yaml/json marshaller functions
 type MarshalFn func(in interface{}) (out []byte, err error)
 
 // Logger allows the user to provide any logger fulfilling this interface

@@ -59,7 +59,12 @@ func TestJsonWrite(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			outDir := t.TempDir()
-			if err := writerJson(outDir, tt.args.doc, tt.args.options); (err != nil) != tt.wantErr {
+
+			w := writerJson{
+				options: tt.args.options,
+			}
+
+			if err := w.Write(outDir, tt.args.doc); (err != nil) != tt.wantErr {
 				t.Fatalf("writerJson() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

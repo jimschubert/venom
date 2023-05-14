@@ -1,32 +1,27 @@
 package venom
 
-import (
-	"fmt"
-	"github.com/jimschubert/venom/internal"
-	"os"
-	"path/filepath"
-)
+type writerYaml struct {
+	options TemplateOptions
+}
 
-func writerYaml(outDir string, doc Documentation, options TemplateOptions) error {
-	data, err := options.YamlMarshaler(&doc)
-	if err != nil {
-		return err
-	}
+func (w *writerYaml) SetTemplateOptions(options TemplateOptions) {
+	w.options = options
+}
 
-	cleanName := internal.CleanPath(doc.RootCommand.Name)
-	docRoot := filepath.Join(outDir, cleanName)
-	if err := os.MkdirAll(docRoot, 0700); err != nil {
-		return err
+func (w *writerYaml) Write(outDir string, doc Documentation) error {
+	helper := writerForMarshals{
+		name:          Yaml.String(),
+		fileExtension: "yml",
+		outDir:        outDir,
+		doc:           doc,
+		marshaller:    w.options.YamlMarshaler,
+		logger:        w.options.Logger,
 	}
-
-	docYaml := filepath.Join(outDir, cleanName, fmt.Sprintf("%s.yml", cleanName))
-	err = os.WriteFile(docYaml, data, 0700)
-	if err == nil {
-		options.Logger.Printf("[yaml] Wrote file %s", docYaml)
-	}
-	return err
+	return helper.write()
 }
 
 func init() {
-	registerWriter(Yaml, writerYaml)
+	registerWriter(Yaml, func() writer {
+		return &writerYaml{}
+	})
 }

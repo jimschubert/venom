@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type writerFn func(outDir string, doc Documentation, options TemplateOptions) error
+type writerFn func() writer
 
 var writers = make(map[Formats]writerFn)
 
@@ -140,8 +140,12 @@ func Write(documentation Documentation) error {
 	for _, format := range []Formats{Yaml, Json, Markdown, Man, ReST} {
 		if formats.IsSet(format) {
 			templateOptions.Logger.Printf("Generating documentation for %s", strings.ToLower(format.String()))
-			if writer, ok := writers[format]; ok {
-				err = writer(outDir, documentation, templateOptions)
+			if writeBuilder, ok := writers[format]; ok {
+				w := writeBuilder()
+				if wt, ok := w.(wantsTemplateOptions); ok {
+					wt.SetTemplateOptions(templateOptions)
+				}
+				err = w.Write(outDir, documentation)
 				if err != nil {
 					return err
 				}

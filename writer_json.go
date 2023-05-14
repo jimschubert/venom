@@ -1,32 +1,27 @@
 package venom
 
-import (
-	"fmt"
-	"github.com/jimschubert/venom/internal"
-	"os"
-	"path/filepath"
-)
+type writerJson struct {
+	options TemplateOptions
+}
 
-func writerJson(outDir string, doc Documentation, options TemplateOptions) error {
-	data, err := options.JsonMarshaler(&doc)
-	if err != nil {
-		return err
-	}
+func (w *writerJson) SetTemplateOptions(options TemplateOptions) {
+	w.options = options
+}
 
-	cleanName := internal.CleanPath(doc.RootCommand.Name)
-	docRoot := filepath.Join(outDir, cleanName)
-	if err := os.MkdirAll(docRoot, 0700); err != nil {
-		return err
+func (w *writerJson) Write(outDir string, doc Documentation) error {
+	helper := writerForMarshals{
+		name:          Json.String(),
+		fileExtension: "json",
+		outDir:        outDir,
+		doc:           doc,
+		marshaller:    w.options.JsonMarshaler,
+		logger:        w.options.Logger,
 	}
-
-	docJson := filepath.Join(outDir, cleanName, fmt.Sprintf("%s.json", cleanName))
-	err = os.WriteFile(docJson, data, 0700)
-	if err == nil {
-		options.Logger.Printf("[json] Wrote file %s", docJson)
-	}
-	return err
+	return helper.write()
 }
 
 func init() {
-	registerWriter(Json, writerJson)
+	registerWriter(Json, func() writer {
+		return &writerJson{}
+	})
 }

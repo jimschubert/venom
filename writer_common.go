@@ -8,7 +8,7 @@ import (
 	"text/template"
 )
 
-type templateWriter struct {
+type writerForTemplates struct {
 	name          string
 	fileExtension string
 	outDir        string
@@ -18,7 +18,7 @@ type templateWriter struct {
 	includeIndex  bool
 }
 
-func (w *templateWriter) write() error {
+func (w *writerForTemplates) write() error {
 	t, err := template.New(w.name).Funcs(newFuncMap(w.funcs)).ParseFS(w.options.Templates, "**/*.tmpl")
 	if err != nil {
 		return err
@@ -119,4 +119,33 @@ func (w *templateWriter) write() error {
 	}
 
 	return nil
+}
+
+type writerForMarshals struct {
+	name          string
+	fileExtension string
+	outDir        string
+	doc           Documentation
+	marshaller    MarshalFn
+	logger        Logger
+}
+
+func (w *writerForMarshals) write() error {
+	data, err := w.marshaller(&w.doc)
+	if err != nil {
+		return err
+	}
+
+	cleanName := internal.CleanPath(w.doc.RootCommand.Name)
+	docRoot := filepath.Join(w.outDir, cleanName)
+	if err := os.MkdirAll(docRoot, 0700); err != nil {
+		return err
+	}
+
+	docJson := filepath.Join(w.outDir, cleanName, fmt.Sprintf("%s.%s", cleanName, w.fileExtension))
+	err = os.WriteFile(docJson, data, 0700)
+	if err == nil {
+		w.logger.Printf("[%s] Wrote file %s", w.name, docJson)
+	}
+	return err
 }
