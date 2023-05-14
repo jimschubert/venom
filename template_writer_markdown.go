@@ -1,7 +1,7 @@
 package venom
 
 func writeMarkdown(outDir string, doc Documentation, options TemplateOptions) error {
-	fns := markdownFunctions{
+	fns := functionsMarkdown{
 		stripAnsi: options.StripAnsiInMarkdown,
 	}
 
