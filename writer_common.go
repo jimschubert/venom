@@ -27,6 +27,9 @@ func (w *writerForTemplates) write() error {
 		return err
 	}
 
+	indexTemplateName := fmt.Sprintf("%s_index.tmpl", templateName)
+	commandTemplateName := fmt.Sprintf("%s_command.tmpl", templateName)
+
 	docRoot := filepath.Join(w.outDir, internal.CleanPath(w.doc.RootCommand.Name))
 	if err := os.MkdirAll(docRoot, 0700); err != nil {
 		return err
@@ -42,83 +45,93 @@ func (w *writerForTemplates) write() error {
 		return err
 	}
 
-	if err := t.ExecuteTemplate(rootCommand, fmt.Sprintf("%s_command.tmpl", templateName), struct {
-		Command
-		Doc Documentation
-	}{
-		Command: w.doc.RootCommand,
-		Doc:     w.doc,
-	}); err != nil {
-		return err
-	}
+	if t.Lookup(commandTemplateName) != nil {
 
-	w.options.Logger.Printf("[%s] Wrote file %s", w.name, rootCommandPath)
-
-	var writeCommand func(c Command, t *template.Template) error
-	writeCommand = func(c Command, t *template.Template) error {
-		subCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.%s", internal.CleanPath(c.FullPath), w.fileExtension))
-		subCommandFile, err := os.Create(subCommandPath)
-		if err != nil {
-			return err
-		}
-		defer func(subCommandFile *os.File) {
-			_ = subCommandFile.Close()
-		}(subCommandFile)
-
-		if err := t.ExecuteTemplate(subCommandFile, fmt.Sprintf("%s_command.tmpl", templateName), struct {
+		if err := t.ExecuteTemplate(rootCommand, commandTemplateName, struct {
 			Command
 			Doc Documentation
 		}{
-			Command: c,
+			Command: w.doc.RootCommand,
 			Doc:     w.doc,
 		}); err != nil {
 			return err
 		}
 
-		w.options.Logger.Printf("[%s] Wrote file %s", w.name, subCommandPath)
+		w.options.Logger.Printf("[%s] Wrote file %s", w.name, rootCommandPath)
 
-		for _, subcommand := range c.Subcommands {
-			err = writeCommand(subcommand, t)
+		var writeCommand func(c Command, t *template.Template) error
+		writeCommand = func(c Command, t *template.Template) error {
+			subCommandPath := filepath.Join(docRoot, fmt.Sprintf("%s.%s", internal.CleanPath(c.FullPath), w.fileExtension))
+			subCommandFile, err := os.Create(subCommandPath)
 			if err != nil {
 				return err
 			}
-		}
+			defer func(subCommandFile *os.File) {
+				_ = subCommandFile.Close()
+			}(subCommandFile)
 
-		return nil
-	}
-
-	if w.doc.RootCommand.Subcommands != nil {
-		for _, subcommand := range w.doc.RootCommand.Subcommands {
-			err = writeCommand(subcommand, t)
-			if err != nil {
+			if err := t.ExecuteTemplate(subCommandFile, commandTemplateName, struct {
+				Command
+				Doc Documentation
+			}{
+				Command: c,
+				Doc:     w.doc,
+			}); err != nil {
 				return err
 			}
+
+			w.options.Logger.Printf("[%s] Wrote file %s", w.name, subCommandPath)
+
+			for _, subcommand := range c.Subcommands {
+				err = writeCommand(subcommand, t)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
 		}
+
+		if w.doc.RootCommand.Subcommands != nil {
+			for _, subcommand := range w.doc.RootCommand.Subcommands {
+				err = writeCommand(subcommand, t)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		w.options.Logger.Printf("[%s] Skipping commands: no template found for %q", w.name, commandTemplateName)
 	}
 
 	if w.includeIndex {
-		var indexName string
-		if w.doc.RootCommand.Name == "index" {
-			indexName = "README"
-		} else {
-			indexName = "index"
-		}
-		indexPath := filepath.Join(docRoot, fmt.Sprintf("%s.%s", indexName, w.fileExtension))
-		index, err := os.Create(indexPath)
-		defer func(f *os.File) {
-			_ = f.Close()
-		}(index)
+		// if the writer supports an index, but user has customized without the targeted index, we just skip and log
+		if t.Lookup(indexTemplateName) != nil {
+			var indexName string
+			if w.doc.RootCommand.Name == "index" {
+				indexName = "README"
+			} else {
+				indexName = "index"
+			}
+			indexPath := filepath.Join(docRoot, fmt.Sprintf("%s.%s", indexName, w.fileExtension))
+			index, err := os.Create(indexPath)
+			defer func(f *os.File) {
+				_ = f.Close()
+			}(index)
 
-		if err != nil {
+			if err != nil {
+				return err
+			}
+
+			err = t.ExecuteTemplate(index, indexTemplateName, w.doc)
+
+			if err == nil {
+				w.options.Logger.Printf("[%s] Wrote file %s", w.name, indexPath)
+			}
 			return err
+		} else {
+			w.options.Logger.Printf("[%s] Skipping index: no template found for %q", w.name, indexTemplateName)
 		}
-
-		err = t.ExecuteTemplate(index, fmt.Sprintf("%s_index.tmpl", templateName), w.doc)
-
-		if err == nil {
-			w.options.Logger.Printf("[%s] Wrote file %s", w.name, indexPath)
-		}
-		return err
 	}
 
 	return nil
