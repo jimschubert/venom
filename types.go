@@ -1,6 +1,7 @@
 package venom
 
 import (
+	"bytes"
 	"github.com/jimschubert/venom/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -84,14 +85,49 @@ type Flag struct {
 	ShorthandDeprecated string `json:"shorthandDeprecated,omitempty" yaml:"shorthandDeprecated,omitempty"`
 	Inherited           bool   `json:"inherited,omitempty" yaml:"inherited,omitempty"`
 	Persistent          bool   `json:"persistent,omitempty" yaml:"persistent,omitempty"`
+	Local               bool   `json:"local,omitempty" yaml:"local,omitempty"`
 	RawUsage            string `json:"rawUsage,omitempty" yaml:"rawUsage,omitempty"`
 }
 
-func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
-	results := make([]Flag, 0)
+func postProcessFlags(flags []*Flag) []*Flag {
+	tabWidth := 4
+	columnWidth := tabWidth // min
+	for _, current := range flags {
+		loc := strings.Index(current.RawUsage, "\t")
+		columnWidth = maxInt(columnWidth, loc+tabWidth)
+	}
+
+	buf := bytes.Buffer{}
+	for _, result := range flags {
+		buf.Reset()
+		loc := strings.Index(result.RawUsage, "\t")
+		if loc > 0 {
+			space := maxInt(columnWidth-loc, tabWidth)
+			buf.WriteString(result.RawUsage[:loc])
+			buf.WriteString(strings.Repeat(" ", space))
+			buf.WriteString(result.RawUsage[loc+1:])
+			result.RawUsage = buf.String()
+		}
+	}
+
+	return flags
+}
+
+func filterFlags(flags []*Flag, fn func(f *Flag) bool) []Flag {
+	result := make([]Flag, 0)
+	for _, flag := range flags {
+		if fn != nil && fn(flag) {
+			result = append(result, *flag)
+		}
+	}
+	return result
+}
+
+func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []*Flag {
+	result := make([]*Flag, 0)
 	if flagSet != nil && flagSet.HasFlags() {
 		flagSet.VisitAll(func(cobraFlag *pflag.Flag) {
-			current := Flag{
+			current := &Flag{
 				Name:                cobraFlag.Name,
 				Shorthand:           cobraFlag.Shorthand,
 				Usage:               cobraFlag.Usage,
@@ -104,13 +140,14 @@ func processFlags(flagSet *pflag.FlagSet, fn func(f *Flag)) []Flag {
 			}
 
 			if fn != nil {
-				fn(&current)
+				fn(current)
 			}
 
-			results = append(results, current)
+			result = append(result, current)
 		})
 	}
-	return results
+
+	return result
 }
 
 // NewCommandFromCobra creates a venom.Command from a cobra.Command
@@ -188,12 +225,28 @@ func NewCommandFromCobra(cmd *cobra.Command, options *Options) Command {
 
 	command.Subcommands = subcommands
 
-	command.LocalFlags = processFlags(cmd.LocalFlags(), nil)
-	command.InheritedFlags = processFlags(cmd.InheritedFlags(), func(f *Flag) {
+	tmp := make([]*Flag, 0)
+	tmp = append(tmp, processFlags(cmd.LocalFlags(), func(f *Flag) {
+		f.Local = true
+	})...)
+	tmp = append(tmp, processFlags(cmd.InheritedFlags(), func(f *Flag) {
 		f.Inherited = true
-	})
-	command.PersistentFlags = processFlags(cmd.PersistentFlags(), func(f *Flag) {
+	})...)
+	tmp = append(tmp, processFlags(cmd.PersistentFlags(), func(f *Flag) {
 		f.Persistent = true
+	})...)
+
+	// aligns all columns across all flag types
+	postProcessFlags(tmp)
+
+	command.LocalFlags = filterFlags(tmp, func(f *Flag) bool {
+		return f.Local
+	})
+	command.InheritedFlags = filterFlags(tmp, func(f *Flag) bool {
+		return f.Inherited
+	})
+	command.PersistentFlags = filterFlags(tmp, func(f *Flag) bool {
+		return f.Persistent
 	})
 
 	return command

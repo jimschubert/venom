@@ -8,11 +8,32 @@ import (
 )
 
 type functionsMarkdown struct {
-	stripAnsi bool
+	stripAnsi      bool
+	maxOptionWidth int
 }
 
 func (m functionsMarkdown) FormatOptions(input string) string {
-	return trimIndent(input)
+	leftAligned := trimIndent(input, 2)
+	width := 0
+
+loop:
+	for i := 0; i < len(leftAligned); i++ {
+		first := rune(leftAligned[i])
+		// lookahead
+		for j := 1; j < 3 && (i+j < len(leftAligned)); j++ {
+			idx := i + j
+			if ' ' == first && ' ' == rune(leftAligned[idx]) {
+				last := rune(leftAligned[idx+1])
+				if ' ' != last && '-' != last {
+					width = idx + 1
+					break loop
+				}
+			}
+		}
+	}
+
+	columnWrapped := hangingIndent(leftAligned, width, m.maxOptionWidth)
+	return columnWrapped
 }
 
 func (m functionsMarkdown) FormatHeader(input string) string {
@@ -57,7 +78,8 @@ type writerMarkdown struct {
 
 func (w *writerMarkdown) Write(outDir string, doc Documentation) error {
 	fns := functionsMarkdown{
-		stripAnsi: w.options.StripAnsiInMarkdown,
+		stripAnsi:      w.options.StripAnsiInMarkdown,
+		maxOptionWidth: w.options.MaxOptionWidthInMarkdown,
 	}
 
 	helper := writerForTemplates{

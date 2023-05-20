@@ -60,10 +60,11 @@ func TestOptions_validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			opts := TemplateOptions{
-				Logger:        defaultTemplateOptions.Logger,
-				YamlMarshaler: defaultTemplateOptions.YamlMarshaler,
-				JsonMarshaler: defaultTemplateOptions.JsonMarshaler,
-				Templates:     templates,
+				Logger:                   defaultTemplateOptions.Logger,
+				YamlMarshaler:            defaultTemplateOptions.YamlMarshaler,
+				JsonMarshaler:            defaultTemplateOptions.JsonMarshaler,
+				Templates:                templates,
+				MaxOptionWidthInMarkdown: 120,
 			}
 
 			if tt.fields.logger != nil {

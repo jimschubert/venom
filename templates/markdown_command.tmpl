@@ -23,7 +23,7 @@
 ### Options
 
 ```
-{{ options .RawFlagUsages }}
+{{ range $flag := .LocalFlags }}{{ with $x := options (flag $flag) }}{{ if $x }}{{ printf "%s\n" $x }}{{ end }}{{ end }}{{- end -}}
 ```
 
 {{ end -}}
@@ -31,9 +31,7 @@
 ### Options inherited from parent commands
 
 ```
-{{ range $flag := .InheritedFlags }}
-{{ flag $flag }}
-{{ end }}
+{{ range $flag := .InheritedFlags }}{{ with $x := options (flag $flag) }}{{ if $x }}{{ printf "%s\n" $x }}{{ end }}{{ end }}{{- end -}}
 ```
 
 {{ end -}}

@@ -31,7 +31,7 @@ func (f functionsRest) SeeAlsoPath(input string) string {
 }
 
 func (f functionsRest) FormatExample(input string) string {
-	return f.indented(trimIndent(input))
+	return f.indented(trimIndent(input, -1))
 }
 
 func (f functionsRest) FormatAutoGenTag(input string) string {

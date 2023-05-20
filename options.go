@@ -14,11 +14,12 @@ var templates embed.FS
 
 // TemplateOptions are those options provided to the templating system
 type TemplateOptions struct {
-	Logger              Logger
-	JsonMarshaler       MarshalFn
-	YamlMarshaler       MarshalFn
-	StripAnsiInMarkdown bool
-	Templates           fs.FS
+	Logger                   Logger
+	JsonMarshaler            MarshalFn
+	YamlMarshaler            MarshalFn
+	StripAnsiInMarkdown      bool
+	MaxOptionWidthInMarkdown int
+	Templates                fs.FS
 }
 
 // Options provides a builder-pattern of user-facing optional functionality when constructing via venom.Initialize
@@ -92,6 +93,11 @@ func (o *Options) WithCustomTemplates(fs fs.FS) *Options {
 	return o
 }
 
+func (o *Options) WithMaxOptionWidthInMarkdown(width int) *Options {
+	o.templateOptions.MaxOptionWidthInMarkdown = width
+	return o
+}
+
 // TemplateOptions provides the value of current TemplateOptions
 func (o *Options) TemplateOptions() TemplateOptions {
 	return *(*o).templateOptions
@@ -121,6 +127,10 @@ func (o *Options) validate() error {
 	if o.templateOptions.Templates == nil {
 		return errors.New("invalid templates provided")
 	}
+
+	if o.templateOptions.MaxOptionWidthInMarkdown < 24 {
+		return errors.New("invalid max options width in markdown provided; minimum is 24")
+	}
 	return nil
 }
 
@@ -132,10 +142,11 @@ func NewOptions() *Options {
 		formats:     Markdown,
 		outDir:      "docs",
 		templateOptions: &TemplateOptions{
-			JsonMarshaler: json.Marshal,
-			YamlMarshaler: yaml.Marshal,
-			Logger:        log.Default(),
-			Templates:     templates,
+			JsonMarshaler:            json.Marshal,
+			YamlMarshaler:            yaml.Marshal,
+			Logger:                   log.Default(),
+			Templates:                templates,
+			MaxOptionWidthInMarkdown: 120,
 		},
 	}
 }

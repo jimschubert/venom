@@ -166,13 +166,25 @@ func (w *writerForMarshals) write() error {
 	return err
 }
 
-func trimIndent(input string) string {
+func trimIndent(input string, max int) string {
 	tmp := strings.FieldsFunc(input, func(r rune) bool {
 		return '\n' == r
 	})
 	lines := make([]string, 0)
 	for _, s := range tmp {
-		lines = append(lines, strings.TrimLeftFunc(s, unicode.IsSpace))
+		spaceCount := max
+		current := strings.TrimLeftFunc(s, func(r rune) bool {
+			shouldDrop := (0 < spaceCount) && unicode.IsSpace(r)
+			spaceCount--
+			return shouldDrop
+		})
+		if len(current) > 0 {
+			lines = append(lines, current)
+		}
+	}
+
+	if len(lines) == 0 {
+		return ""
 	}
 	return strings.Join(lines, "\n")
 }
