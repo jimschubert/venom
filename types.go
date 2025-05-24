@@ -162,7 +162,7 @@ func NewCommandFromCobra(cmd *cobra.Command, options *Options) Command {
 	}
 
 	annotations := make(map[string]string)
-	if cmd.Annotations != nil && len(cmd.Annotations) > 0 {
+	if len(cmd.Annotations) > 0 {
 		for key, value := range cmd.Annotations {
 			annotations[key] = value
 		}
