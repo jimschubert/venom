@@ -26,18 +26,18 @@ type Documentation struct {
 	options           *Options `yaml:"-"`
 }
 
-func (d *Documentation) init() {
-	if d.GenerationDate == "" {
-		d.GenerationDate = time.Now().Format("2-Jan-2006")
-	}
-}
-
 // Write these docs
 func (d *Documentation) Write() error {
 	if d != nil {
 		return Write(*d)
 	}
 	return nil
+}
+
+func (d *Documentation) init() {
+	if d.GenerationDate == "" {
+		d.GenerationDate = time.Now().Format("2-Jan-2006")
+	}
 }
 
 // ParentCommand provides the name of a command's parent

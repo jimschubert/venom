@@ -40,6 +40,8 @@ func Initialize(cmd *cobra.Command, options *Options) error {
 			formats = append(formats, "json")
 		case ReST:
 			formats = append(formats, "rest")
+		case Man:
+			// ignore
 		}
 	}
 
